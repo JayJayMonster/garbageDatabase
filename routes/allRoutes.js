@@ -1,4 +1,6 @@
 const express = require('express');
+let Garbage = require('../models/model');
+
 const {
   getGarbage,
   postGarbage,

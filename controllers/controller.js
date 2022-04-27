@@ -44,50 +44,78 @@ const garbageOptionsId = res => {
 };
 
 const getGarbageId = async (req, res) => {
+  let garbage;
   try {
-    let garbage = await Garbage.findById(req.params.garbageId);
-    let itemJson = garbage.toJSON();
-
-    res.status(200).header('Content-Type', 'application/json').json(itemJson);
+    garbage = await Garbage.findById(req.params.garbageId);
+    if (garbage == null) {
+      return res
+        .status(404)
+        .json({ message: 'Cannot find this database entry' });
+    }
   } catch (err) {
-    res.status(404).json({ message: err });
+    return res.status(500).json({ message: err.message });
   }
+
+  res.garbage = garbage;
+  const itemJson = garbage.toJSON();
+  res.status(200).header('Content-Type', 'application/json').json(itemJson);
 };
 
 const deleteGarbage = async (req, res) => {
-  let garbage = await Garbage.findById(req.params.garbageId);
-  res.garbage = garbage;
+  let garbage;
   try {
-    await Garbage.remove({ _id: req.params.itemId });
-    res.status(204).json({ message: 'user deleted' });
+    garbage = await Garbage.findById(req.params.garbageId);
+    if (garbage == null) {
+      return res
+        .status(404)
+        .json({ message: 'Cannot find this database entry' });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+  res.garbage = garbage;
+
+  try {
+    await res.garbage.remove();
+    res.json({ message: 'user deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
 const putGarbage = async (req, res) => {
-  //await findMovie(req, res, next)
-  let garbage = await Garbage.findById(req.params.garbageId);
+  let garbage;
+  try {
+    garbage = await Garbage.findById(req.params.garbageId);
+    if (garbage == null) {
+      return res
+        .status(404)
+        .json({ message: 'Cannot find this database entry' });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
   res.garbage = garbage;
+
   if (req.body.id != null) {
-    res.movie.id = req.body.id;
+    res.garbage.id = req.body.id;
   }
   if (req.body.user_id != null) {
-    res.movie.user_id = req.body.user_id;
+    res.garbage.user_id = req.body.user_id;
   }
   if (req.body.trashtag_id != null) {
-    res.movie.trashtag_id = req.body.trashtag_id;
+    res.garbage.trashtag_id = req.body.trashtag_id;
   }
   if (req.body.title != null) {
-    res.movie.title = req.body.title;
+    res.garbage.title = req.body.title;
   }
   if (req.body.text != null) {
-    res.movie.text = req.body.text;
+    res.garbage.text = req.body.text;
   }
 
   try {
     const updatedGarbage = await res.garbage.save();
-    res.status(202).json(updatedGarbage);
+    res.json(updatedGarbage);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
